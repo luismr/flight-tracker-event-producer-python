@@ -1,0 +1,6 @@
+python-dotenv
+requests
+quixstreams
+pytest
+pytest-mock
+pytest-cov
