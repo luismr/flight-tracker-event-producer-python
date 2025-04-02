@@ -86,10 +86,11 @@ class OpenSkyClient:
             }
             
             if print_mode:
-                self.logger.debug("Printing flight data to stdout: %s", len(flight_data))    
+                self.logger.debug("Printing flight data to stdout")    
                 print(json.dumps(flight_data, indent=2))
             else:
-                self.logger.debug("Appending flight data to processed_data: %s", len(flight_data))
+                self.logger.debug("Appending flight data to processed_data")
                 processed_data.append(flight_data)
-        
+
+        self.logger.debug("Processed_data: %s", len(flight_data)) 
         return processed_data if not print_mode else None

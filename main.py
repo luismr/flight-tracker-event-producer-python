@@ -34,6 +34,12 @@ def get_config():
             else:
                 config[key] = env_value
     
+    logging.basicConfig(
+        level=config['LOGLEVEL'],
+        format='%(asctime)s:%(levelname)s:%(name)s:%(message)s',
+        datefmt='%Y-%m-%dT%H:%M:%S'
+    )
+
     return config
 
 def run_once(config, print_mode=False):
@@ -60,8 +66,7 @@ def main():
     args = parser.parse_args()
     
     config = get_config()
-    logging.basicConfig(level=config['LOGLEVEL'])
-
+    
     logging.debug("Flight Tracker Event Producer started")
     
     run_once(config, print_mode=not args.kafka)  # Print by default unless --kafka is specified
