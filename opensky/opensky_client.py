@@ -86,10 +86,10 @@ class OpenSkyClient:
             }
             
             if print_mode:
-                self.logger.debug("Printing flight data to stdout")    
+                self.logger.debug("Printing flight data to stdout: %s", flight_data['icao24'])    
                 print(json.dumps(flight_data, indent=2))
             else:
-                self.logger.debug("Appending flight data to processed_data")
+                self.logger.debug("Appending flight data to processed_data: %s", flight_data['icao24'])
                 processed_data.append(flight_data)
 
         self.logger.debug("Processed_data: %s", len(flight_data)) 
