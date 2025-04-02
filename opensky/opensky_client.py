@@ -1,5 +1,7 @@
 import requests
 import json
+import logging
+
 from datetime import datetime
 
 
@@ -9,7 +11,10 @@ class OpenSkyClient:
     """
 
     def __init__(self, url: str):
+        self.logger = logging.getLogger(__name__)
         self.url = url
+
+        self.logger.debug(f"OpenSkyClient initialized with URL: {self.url}")
 
     def __fetch_flight_positions(self, lat_min: float, lat_max: float, lon_min: float, lon_max: float) -> list[dict]:
         """
@@ -52,6 +57,7 @@ class OpenSkyClient:
 
         data = self.__fetch_flight_positions(lat_min, lat_max, lon_min, lon_max);    
         if not data or 'states' not in data:
+            self.logger.debug("No flight data found")
             return [] if not print_mode else None
         
         timestamp = datetime.now().isoformat()
@@ -80,8 +86,10 @@ class OpenSkyClient:
             }
             
             if print_mode:
+                self.logger.debug("Printing flight data to stdout: %s", len(flight_data))    
                 print(json.dumps(flight_data, indent=2))
             else:
+                self.logger.debug("Appending flight data to processed_data: %s", len(flight_data))
                 processed_data.append(flight_data)
         
         return processed_data if not print_mode else None

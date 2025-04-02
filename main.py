@@ -1,5 +1,6 @@
 import os
 import argparse
+import logging
 
 from dotenv import load_dotenv
 
@@ -13,6 +14,7 @@ DEFAULT_CONFIG = {
     'KAFKA_BOOTSTRAP_SERVERS': 'localhost:9092',
     'KAFKA_TOPIC': 'flight-positions',
     'KAFKA_LOGLEVEL': 'INFO',
+    'LOGLEVEL': 'INFO',
     'LAT_MIN': -33.75,
     'LAT_MAX': 5.27,
     'LON_MIN': -73.99,
@@ -58,7 +60,14 @@ def main():
     args = parser.parse_args()
     
     config = get_config()
+    logging.basicConfig(level=config['LOGLEVEL'])
+
+    logging.debug("Flight Tracker Event Producer started")
+    
     run_once(config, print_mode=not args.kafka)  # Print by default unless --kafka is specified
+
+    logging.debug("Flight Tracker Event Producer finished")
+
 
 if __name__ == '__main__':
     main() 
