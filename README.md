@@ -92,12 +92,8 @@ For development and testing purposes, you can run a single Kafka broker locally:
 1. Start a Kafka broker using Docker with proper advertised listeners configuration:
 ```bash
 docker run -d \
-  -p 9092:9092 \
   --name broker \
-  -e KAFKA_BROKER_ID=1 \
-  -e KAFKA_LISTENERS=PLAINTEXT://:9092 \
-  -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
-  -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+  -p 9092:9092 \
   apache/kafka:latest
 ```
 
