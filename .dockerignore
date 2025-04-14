@@ -1,0 +1,17 @@
+# Ignore everything
+*
+
+# Allow specific files and directories
+!main.py
+!events/
+!opensky/
+!requirements.txt
+
+# Ignore any cache files that might be in allowed directories
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+**/.Python
+**/*.so 
+.env

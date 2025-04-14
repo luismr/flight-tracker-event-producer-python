@@ -1,8 +1,15 @@
-# Use Python 3.8 slim image
-FROM python:3.8-slim
+# Use Python 3.9 slim image
+FROM python:3.9-slim
 
-# Install cron and procps for debugging
-RUN apt-get update && apt-get -y install cron procps
+# Install cron, procps and build dependencies
+RUN apt-get update && apt-get -y install \
+    cron \
+    procps \
+    gcc \
+    python3-dev \
+    libffi-dev \
+    build-essential \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create a non-root user
 RUN useradd -m -s /bin/bash appuser
@@ -25,7 +32,9 @@ ENV PATH="/app/venv/bin:$PATH"
 COPY requirements.txt .
 
 # Install Python dependencies in virtual environment
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir wheel && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
 COPY . .
