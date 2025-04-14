@@ -7,6 +7,7 @@ RUN apt-get update && apt-get -y install \
     procps \
     gcc \
     python3-dev \
+    python3-venv \
     libffi-dev \
     build-essential \
     && rm -rf /var/lib/apt/lists/*
@@ -23,41 +24,61 @@ RUN mkdir -p /var/run/cron && \
 
 # Set working directory
 WORKDIR /app
+# Set ownership of app directory
+RUN chown -R appuser:appuser /app
+
+# Switch to appuser
+USER appuser
 
 # Create and activate virtual environment
-RUN python -m venv /app/venv
+RUN /usr/bin/python3 -m venv /app/venv
 ENV PATH="/app/venv/bin:$PATH"
 
 # Copy requirements first to leverage Docker cache
 COPY requirements.txt .
 
 # Install Python dependencies in virtual environment
-RUN pip install --no-cache-dir --upgrade pip && \
+RUN . /app/venv/bin/activate && \ 
+    pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir wheel && \
     pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application
-COPY . .
+COPY main.py .
+COPY events/ .
+COPY opensky/ .
+
+# Switch to root
+USER root
 
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log && \
     chmod 766 /var/log/cron.log
 
 # Create entrypoint script
-RUN echo '#!/bin/bash\n\
+RUN echo '#!/bin/bash -x\n\
 # Update crontab with environment variable\n\
 CRON_SCHEDULE=${CRON_SCHEDULE:-"*/5 * * * *"}\n\
+\n\
+# Export all environment variables to a file\n\
+env | grep -v "HOSTNAME\\|HOME\\|PATH\\|TERM" > /app/.env\n\
 \n\
 # Create user crontab file\n\
 cat > /tmp/crontab << EOL\n\
 SHELL=/bin/bash\n\
 PATH=/app/venv/bin:/usr/local/bin:/usr/bin:/bin\n\
 PYTHONPATH=/app\n\
-${CRON_SCHEDULE} cd /app && /app/venv/bin/python main.py --kafka >> /var/log/cron.log 2>&1\n\
+${CRON_SCHEDULE} cd /app && \
+    . /app/.env && \
+    . /app/venv/bin/activate && python main.py --kafka >> /var/log/cron.log 2>&1\n\
 EOL\n\
 \n\
 # Apply user crontab\n\
 crontab /tmp/crontab\n\
+\n\
+# Set proper permissions for env file\n\
+chown appuser:appuser /app/.env\n\
+chmod 600 /app/.env\n\
 \n\
 # Start cron as root\n\
 /usr/sbin/cron\n\
@@ -67,8 +88,6 @@ exec su - appuser -c "tail -f /var/log/cron.log"' > /entrypoint.sh
 
 RUN chmod +x /entrypoint.sh
 
-# Set ownership of app directory
-RUN chown -R appuser:appuser /app
 
 # Set entrypoint
 ENTRYPOINT ["/entrypoint.sh"] 
