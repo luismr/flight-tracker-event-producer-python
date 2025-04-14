@@ -59,7 +59,7 @@ docker build -t flight-tracker-producer .
 2. Run the container:
 ```bash
 docker run -d \
-  --name flight-tracker \
+  --name flight-tracker-producer \
   -e CRON_SCHEDULE="*/5 * * * *" \
   -e KAFKA_BOOTSTRAP_SERVERS="broker1:9092,broker2:9092,broker3:9092" \
   -e KAFKA_TOPIC=flight-positions \

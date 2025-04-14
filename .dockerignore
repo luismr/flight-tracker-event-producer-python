@@ -6,6 +6,8 @@
 !events/
 !opensky/
 !requirements.txt
+!docker/
+!docker/docker-entrypoint.sh
 
 # Ignore any cache files that might be in allowed directories
 **/__pycache__/

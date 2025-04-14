@@ -45,49 +45,19 @@ RUN . /app/venv/bin/activate && \
 
 # Copy the rest of the application
 COPY main.py .
-COPY events/ .
-COPY opensky/ .
+COPY events/ events/
+COPY opensky/ opensky/
 
 # Switch to root
 USER root
+
+# Copy the docker entrypoint
+COPY docker/docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 # Create the log file to be able to run tail
 RUN touch /var/log/cron.log && \
     chmod 766 /var/log/cron.log
 
-# Create entrypoint script
-RUN echo '#!/bin/bash -x\n\
-# Update crontab with environment variable\n\
-CRON_SCHEDULE=${CRON_SCHEDULE:-"*/5 * * * *"}\n\
-\n\
-# Export all environment variables to a file\n\
-env | grep -v "HOSTNAME\\|HOME\\|PATH\\|TERM" > /app/.env\n\
-\n\
-# Create user crontab file\n\
-cat > /tmp/crontab << EOL\n\
-SHELL=/bin/bash\n\
-PATH=/app/venv/bin:/usr/local/bin:/usr/bin:/bin\n\
-PYTHONPATH=/app\n\
-${CRON_SCHEDULE} cd /app && \
-    . /app/.env && \
-    . /app/venv/bin/activate && python main.py --kafka >> /var/log/cron.log 2>&1\n\
-EOL\n\
-\n\
-# Apply user crontab\n\
-crontab /tmp/crontab\n\
-\n\
-# Set proper permissions for env file\n\
-chown appuser:appuser /app/.env\n\
-chmod 600 /app/.env\n\
-\n\
-# Start cron as root\n\
-/usr/sbin/cron\n\
-\n\
-# Switch to appuser\n\
-exec su - appuser -c "tail -f /var/log/cron.log"' > /entrypoint.sh
-
-RUN chmod +x /entrypoint.sh
-
-
 # Set entrypoint
-ENTRYPOINT ["/entrypoint.sh"] 
+ENTRYPOINT ["/docker-entrypoint.sh"] 
